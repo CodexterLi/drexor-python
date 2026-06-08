@@ -94,6 +94,15 @@ Client ──▶ FastAPI (uvicorn :8000)
 
 当前使用 raw SQL migration 文件，例如 `001_init.sql`。
 
+### 文档库
+
+- `docs/product/`：产品 / 功能文档。
+- `docs/architecture/`：系统架构文档。
+- `docs/api/`：API 文档。
+- `docs/dev-phase/`：开发进度文档。
+
+接口、配置、数据结构、服务边界或模块行为发生变化时，必须同步更新对应文档。
+
 ## 关键模式
 
 - **异步优先**：数据库、Redis、HTTP 等 I/O 均使用 async。
@@ -103,6 +112,116 @@ Client ──▶ FastAPI (uvicorn :8000)
 - **认证方式**：路由可通过 JWT cookie 或 API key header 获取当前用户。
 - **用户隔离**：当前模型主要通过 `user_id` 进行数据归属。
 
+## 分层架构
+
+编写业务代码、创建新文件、重构代码时遵循以下依赖方向：
+
+```text
+API / Router          HTTP 参数解析、依赖注入、响应返回
+    ↓
+Application / UseCase 跨 service、跨领域或多步骤业务编排
+    ↓
+Service               单领域业务规则
+    ↓
+Repository            数据访问接口和查询封装
+    ↓
+Model / Infrastructure SQLAlchemy 模型、DB、Redis、外部服务实现
+```
+
+当前简单业务可以保持 `API -> Service -> Repository`。当一个业务流程需要组合 2 个以上 service、外部系统、事务边界、Redis 事件或状态流转时，应新增明确的 Application/UseCase 编排层，例如 `app/services/<domain>/usecase.py` 或 `app/application/<domain>.py`。
+
+| 层 | 允许依赖 | 禁止依赖 |
+| --- | --- | --- |
+| API / Router | Service、UseCase、Schema、Depends | Repository、SQLAlchemy 查询、Redis 细节 |
+| Application / UseCase | 多个 Service、事务管理、事件发布接口 | FastAPI Request/Response、具体 HTTP 细节 |
+| Service | Repository、Domain helper、基础组件 | FastAPI DTO、其他领域的 Repository |
+| Repository | SQLAlchemy session、Model | HTTP、WebSocket、Redis Streams 副作用 |
+| Model / Schema | 类型、字段、校验 | 业务流程、外部 I/O |
+
+禁止事项：
+
+- 不要在 API 路由中直接写 SQLAlchemy 查询。
+- 不要在 API 路由中直接串联多个 repository 或外部服务。
+- 不要让 service 依赖 FastAPI `Request`、`Response` 或 HTTP-only schema。
+- 不要让 repository 发布消息、写缓存、调用 HTTP 或处理 WebSocket。
+
+## Application / UseCase 编排
+
+复杂业务流程必须有清晰编排层，避免 Handler/Router 变成流程脚本。
+
+| 场景 | 推荐处理 |
+| --- | --- |
+| 单个 service 可完成 | `API -> Service` |
+| 需要 2 个以上 service 协作 | `API -> UseCase -> Services` |
+| 需要事务保证 | `API -> UseCase + transaction boundary -> Services` |
+| 需要聚合多个 I/O 数据源 | `API -> UseCase`，可并发聚合 |
+| 需要最终一致性 | `API -> UseCase -> Redis Streams / Domain Event` |
+
+UseCase 命名建议：
+
+- 文件：`<business>_usecase.py`
+- 类：`<Business>UseCase`
+- 方法：动词开头，描述完整业务动作，例如 `create_order_with_payment`
+
+UseCase 只负责编排，不堆领域规则；领域规则仍放在对应 service 或 domain helper。
+
+## API 和响应规范
+
+HTTP API 优先使用资源导向 URL：
+
+```text
+GET    /api/v1/resources
+GET    /api/v1/resources/{id}
+POST   /api/v1/resources
+PUT    /api/v1/resources/{id}
+PATCH  /api/v1/resources/{id}
+DELETE /api/v1/resources/{id}
+```
+
+过滤、排序、分页使用查询参数：
+
+```text
+GET /api/v1/resources?status=active&sort=created_at&limit=20&offset=0
+```
+
+编写或修改路由时：
+
+- 统一使用 `app.core.responses` 中的响应工具。
+- 成功响应直接返回数据对象，不额外包一层 `data`。
+- 列表响应使用 `{ "items": [...], "totalCount": n }`。
+- 错误响应使用统一格式 `{ "error": { "code", "message" } }`。
+- 不要在路由里临时定义自定义响应格式。
+
+## 数据库、缓存和并发
+
+数据库访问：
+
+- 查询逻辑集中在 repository，不要散落在 service 或 API 层。
+- 只查询需要的列和关系，避免无意的全量加载。
+- 避免 N+1 查询；需要关联数据时优先批量查询并在内存中组装。
+- 事务边界应由 UseCase 或明确的 service 方法控制，不要散落在 API 层。
+- 数据库错误应映射为稳定业务异常，不要向上泄露底层驱动错误文本。
+
+Redis 和缓存：
+
+- Redis key 前缀集中定义在 `app/db/redis_keys/`。
+- 使用 Cache-Aside 时，读取顺序为缓存 -> 数据库 -> 写回缓存；更新数据后删除或刷新缓存。
+- 缓存写入失败通常不应阻断主流程，但必须有可观测日志。
+- 不要缓存密钥、完整 token、私钥、完整 API key 等敏感明文。
+
+并发与后台任务：
+
+- 并发聚合多个 I/O 结果时使用 `asyncio.TaskGroup` 或等价结构，保证失败时有明确取消和错误处理。
+- 后台任务、scheduler job、queue consumer 必须有明确启动、关闭和失败处理路径。
+- 不要静默吞掉 task 内异常；至少记录日志或返回到调用方。
+- 外部 HTTP、Redis、数据库调用应设置合理超时。
+
+日志和配置：
+
+- 日志字段使用稳定 key，例如 `request_id`、`user_id`、`method`、`path`、`status`、`latency_ms`。
+- 对外返回通用错误消息时，内部日志可以记录更详细错误链，但不能泄露敏感信息。
+- 新增配置时同步更新 `app/config/settings.py`、`.env.example` 和相关文档。
+
 ## 代码风格
 
 - Ruff 配置位于 `ruff.toml`，行宽 120。
@@ -111,6 +230,23 @@ Client ──▶ FastAPI (uvicorn :8000)
 - 忽略 `B008`，用于兼容 FastAPI `Depends()`。
 - isort first-party 包含 `app` 和 `packages`。
 - SQLAlchemy 模型中的 `Mapped[]` 需要运行时类型导入，`app/models/` 对 `TC003` 有例外。
+
+| 项目 | 建议限制 | 超出时 |
+| --- | --- | --- |
+| 函数/方法 | 尽量不超过 50 行 | 拆分私有 helper、service 方法或独立对象 |
+| 文件 | 尽量不超过 500 行 | 按职责拆分模块 |
+| 行宽 | 120 字符 | 换行或拆分表达式 |
+| 参数 | 尽量不超过 5 个 | 使用 Pydantic model、dataclass 或参数对象 |
+| 嵌套 | 尽量不超过 4 层 | 早返回、拆 helper |
+
+命名规范：
+
+- 模块和函数使用 `snake_case`。
+- 类使用 `PascalCase`。
+- 常量使用 `UPPER_SNAKE_CASE`。
+- 私有 helper 使用 `_` 前缀。
+- 异常类使用明确业务语义，例如 `InvalidApiKeyException`。
+- 布尔变量使用 `is_`、`has_`、`can_` 前缀。
 
 ## 编码约束
 
@@ -131,12 +267,48 @@ Client ──▶ FastAPI (uvicorn :8000)
 - 日志不得包含密码、JWT、API secret、TOTP secret、私钥、完整 API key 等敏感信息。
 - 代码风格要服务可读性：命名清晰、分支扁平、避免深层嵌套，优先早返回；不要为了压行数牺牲语义。
 
+## 注释与文档
+
+注释精简为主，仅在关键位置添加中文注释。
+
+必须注释：
+
+- 复杂业务流程的步骤标注。
+- 非显而易见的业务规则。
+- 事务边界、重试策略、幂等策略和最终一致性处理。
+- 临时方案或技术债务，例如 `TODO:`、`FIXME:`。
+
+禁止注释：
+
+- 不要解释显而易见的代码。
+- 不要重复代码本身的描述。
+- 不要每行都加注释。
+
+复杂业务可以用步骤编号标注关键节点：
+
+```python
+async def create_order_with_payment(self, command: CreateOrderCommand) -> Order:
+    # 1. 校验用户和余额
+    await self._validate_user(command.user_id)
+
+    # 2. 创建订单并锁定库存
+    order = await self._create_order(command)
+
+    # 3. 发起支付流程
+    await self._start_payment(order)
+    return order
+```
+
 ## 测试要求
 
 - 测试统一放在 `tests/`，文件命名为 `test_*.py`。
 - 对 service 和 repository 的核心分支补测试；API 行为变化至少覆盖成功路径和关键失败路径。
 - 修复 bug 时，优先先补一个能复现问题的测试，再修复实现。
 - 不要依赖测试执行顺序；涉及时间、ID、Redis、数据库的测试应显式隔离状态。
+- 测试命名建议：`test_<function>_<scenario>`，例如 `test_get_by_id_not_found`。
+- 测试结构遵循 AAA：Arrange、Act、Assert。
+- 不要进行真实外部调用；外部 HTTP、链 RPC、邮件、支付等必须 mock、fake 或通过本地测试替身。
+- 不要使用 `time.sleep()` 等待异步流程；应使用可控事件、mock 时间或轮询带超时。
 
 ## 环境变量
 

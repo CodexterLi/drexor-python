@@ -43,6 +43,10 @@ make dev
 
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
+- 接口文档: [docs/api/README.md](./docs/api/README.md)
+- 产品文档: [docs/README.md](./docs/README.md)
+- 架构文档: [docs/architecture/README.md](./docs/architecture/README.md)
+- 开发进度: [docs/dev-phase/README.md](./docs/dev-phase/README.md)
 
 ## 项目结构
 
@@ -65,6 +69,17 @@ packages/
 └── common/                # 未来多服务共享的纯基础设施工具
 tests/                     # pytest 测试
 ```
+
+## 文档库
+
+| 目录 | 说明 |
+| --- | --- |
+| `docs/product/` | 产品 / 功能文档 |
+| `docs/architecture/` | 系统架构文档 |
+| `docs/api/` | API 文档 |
+| `docs/dev-phase/` | 开发进度文档 |
+
+修改代码时如果影响接口、配置、数据结构、服务边界或模块行为，需要同步更新对应文档。
 
 ## 主要 API
 
