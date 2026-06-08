@@ -1,7 +1,7 @@
 [project]
-name = "drexor-backend"
+name = "drexor-python"
 version = "0.1.0"
-description = "Drexor Backend - 用户认证、Web3 钱包、API Key、Redis、PostgreSQL、WebSocket 基础设施"
+description = "drexor-python - 用户认证、Web3 钱包、API Key、Redis、PostgreSQL、WebSocket 基础设施"
 requires-python = ">=3.14"
 authors = [
     {name = "Dexter"}

@@ -50,8 +50,8 @@ async def lifespan(app: FastAPI):
 
 # 创建FastAPI应用
 app = FastAPI(
-    title="Drexor",
-    description="Drexor - AI Agent Platform with Web3 Authentication",
+    title="drexor-python",
+    description="Drexor Python backend with Web3 authentication and infrastructure services",
     version="0.1.0",
     lifespan=lifespan,
 )

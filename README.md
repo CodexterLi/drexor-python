@@ -1,6 +1,6 @@
-# Drexor Backend
+# drexor-python
 
-Drexor 后端 — 用户认证 + 数据库 + Redis + WebSocket 基础设施。
+drexor-python 是 Drexor 的 Python 后端服务，提供用户认证 + 数据库 + Redis + WebSocket 基础设施。
 
 纯基础设施核心后端（无 AI/Agent 运行时）。前端为独立仓库。
 
@@ -60,7 +60,10 @@ app/
 ├── scheduler/             # APScheduler 定时任务
 ├── queue/                 # Redis Streams 消费者框架
 ├── api/                   # API 路由层 (auth / common / websocket)
-└── utils/                 # 工具 (snowflake, timezone)
+└── utils/                 # 兼容工具入口
+packages/
+└── common/                # 未来多服务共享的纯基础设施工具
+tests/                     # pytest 测试
 ```
 
 ## 主要 API

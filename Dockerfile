@@ -14,6 +14,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 
 # Copy application code and install project
 COPY app/ app/
+COPY packages/ packages/
 RUN uv pip install --system .
 
 EXPOSE 8000

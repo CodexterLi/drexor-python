@@ -20,8 +20,8 @@ async def api_info():
     """获取 API 信息"""
     return ok(
         data={
-            "name": "Drexor",
+            "name": "drexor-python",
             "version": "0.1.0",
-            "description": "Drexor backend with authentication, database, Redis and WebSocket",
+            "description": "Drexor Python backend with authentication, database, Redis and WebSocket",
         }
     )
