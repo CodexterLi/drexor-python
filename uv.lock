@@ -536,6 +536,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "python-multipart" },
     { name = "redis" },
+    { name = "scalar-fastapi" },
     { name = "sqlalchemy" },
     { name = "uvicorn", extra = ["standard"] },
     { name = "web3" },
@@ -570,6 +571,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "python-multipart", specifier = ">=0.0.24" },
     { name = "redis", specifier = ">=7.4.0" },
+    { name = "scalar-fastapi", specifier = ">=1.8.2" },
     { name = "sqlalchemy", specifier = ">=2.0.49" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.44.0" },
     { name = "web3", specifier = ">=7.5.0" },
@@ -1409,6 +1411,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/1b/2d/439b0728a92964a04d9c88ea1ca9ebb128893fbbd5834faa31f987f2fd4c/rlp-4.1.0.tar.gz", hash = "sha256:be07564270a96f3e225e2c107db263de96b5bc1f27722d2855bd3459a08e95a9", size = 33429, upload-time = "2025-02-04T22:05:59.089Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/99/fb/e4c0ced9893b84ac95b7181d69a9786ce5879aeb3bbbcbba80a164f85d6a/rlp-4.1.0-py3-none-any.whl", hash = "sha256:8eca394c579bad34ee0b937aecb96a57052ff3716e19c7a578883e767bc5da6f", size = 19973, upload-time = "2025-02-04T22:05:57.05Z" },
+]
+
+[[package]]
+name = "scalar-fastapi"
+version = "1.8.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cc/81/c0c70776a3d7d371ee06d38d26a8d361c97439d46f79acb6d67cf6c760ad/scalar_fastapi-1.8.2.tar.gz", hash = "sha256:0de09b8c63f78c1052792faa200d740b2ccaeeb88ac54e7ea633ac4edc6fde82", size = 8371, upload-time = "2026-04-09T22:41:24.267Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d8/b1/b9a482620479b2801a4dfa5c4c10b4cc280097e894114e0298f21a0fca55/scalar_fastapi-1.8.2-py3-none-any.whl", hash = "sha256:d96e2c8b3676491eaebb4ec8d9f4de77adb2374d86f87d321546fa6f084e8cb8", size = 7677, upload-time = "2026-04-09T22:41:23.209Z" },
 ]
 
 [[package]]

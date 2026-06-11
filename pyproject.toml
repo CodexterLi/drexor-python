@@ -9,6 +9,7 @@ authors = [
 dependencies = [
     # ============ Web 框架核心 ============
     "fastapi>=0.135.3",          # FastAPI Web框架 - 高性能异步API框架
+    "scalar-fastapi>=1.8.2",      # Scalar API Reference - 对外API文档界面
     "uvicorn[standard]>=0.44.0", # ASGI服务器 - 用于运行FastAPI应用(开发环境)
     "gunicorn>=25.3.0",          # WSGI/ASGI服务器 - 生产环境多进程管理器
 

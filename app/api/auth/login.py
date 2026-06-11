@@ -22,7 +22,7 @@ from app.services.auth import AuthService
 router = APIRouter()
 
 
-@router.post("/login")
+@router.post("/login", response_model=TokenResponse)
 async def login(
     response: Response,
     login_data: LoginRequest,
@@ -58,7 +58,7 @@ async def login(
         ) from None
 
 
-@router.post("/refresh")
+@router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(
     request: Request,
     response: Response,

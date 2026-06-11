@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from pydantic import ValidationError
 
+from app.api.docs import register_api_docs
 from app.api.router import api_router
 from app.config.settings import settings
 from app.core.exceptions import (
@@ -73,6 +74,7 @@ app.add_middleware(
 
 # 注册路由
 app.include_router(api_router)
+register_api_docs(app)
 
 
 if __name__ == "__main__":

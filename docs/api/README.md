@@ -13,6 +13,14 @@
 - 浏览器认证优先使用 HttpOnly Cookie。
 - 非浏览器客户端可使用 Bearer Token 或 API Key。
 
+## 在线文档入口
+
+| 入口 | 地址 | 用途 |
+| --- | --- | --- |
+| Swagger UI | `http://localhost:8000/docs` | 内部开发、接口调试 |
+| Scalar API Reference | `http://localhost:8000/scalar` | 对外阅读、演示、前端联调 |
+| ReDoc | `http://localhost:8000/redoc` | 备用 OpenAPI 阅读入口 |
+
 ## 认证方式
 
 Cookie / Bearer：

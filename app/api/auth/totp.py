@@ -15,7 +15,7 @@ from app.services.auth import AuthService
 router = APIRouter()
 
 
-@router.post("/totp/setup")
+@router.post("/totp/setup", response_model=TOTPSetupResponse)
 async def setup_totp(
     current_user: User = Depends(get_current_active_user),
     auth_service: AuthService = Depends(get_auth_service),
@@ -25,7 +25,7 @@ async def setup_totp(
     return ok(data=TOTPSetupResponse(**result).model_dump(by_alias=True))
 
 
-@router.post("/totp/verify")
+@router.post("/totp/verify", response_model=UserResponse)
 async def verify_totp(
     totp_data: TOTPVerifyRequest,
     current_user: User = Depends(get_current_active_user),
@@ -46,7 +46,7 @@ async def verify_totp(
         ) from None
 
 
-@router.post("/totp/disable")
+@router.post("/totp/disable", response_model=UserResponse)
 async def disable_totp(
     current_user: User = Depends(get_current_active_user),
     auth_service: AuthService = Depends(get_auth_service),

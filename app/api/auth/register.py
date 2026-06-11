@@ -15,7 +15,7 @@ from app.services.auth import AuthService
 router = APIRouter()
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(
     user_in: UserCreate,
     current_user: User = Depends(get_current_active_user),

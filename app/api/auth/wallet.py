@@ -19,7 +19,7 @@ from app.services.auth import AuthService
 router = APIRouter()
 
 
-@router.post("/wallet/nonce")
+@router.post("/wallet/nonce", response_model=WalletNonceResponse)
 async def get_wallet_nonce(
     req: WalletNonceRequest,
     auth_service: AuthService = Depends(get_auth_service),
@@ -29,7 +29,7 @@ async def get_wallet_nonce(
     return WalletNonceResponse(nonce=nonce, message=message).model_dump()
 
 
-@router.post("/wallet/login")
+@router.post("/wallet/login", response_model=WalletLoginResponse)
 async def wallet_login(
     response: Response,
     req: WalletLoginRequest,

@@ -37,11 +37,33 @@ psql -U postgres -d drexor -f migrations/001_init.sql
 
 # 运行服务
 make dev
+
+# 可选：运行后台 worker
+# 默认不启用任何后台角色；按 .env 打开 SCHEDULER_ENABLED 或 QUEUE_WORKER_ENABLED 后再运行。
+make worker
 ```
+
+### Docker
+
+API 和 worker 使用同一个镜像，不需要分别构建。区别只在启动命令：
+
+```bash
+# 构建镜像
+make docker-build
+
+# 运行 API
+make docker-run-api
+
+# 运行 worker
+make docker-run-worker
+```
+
+也可以参考 [docker-compose.example.yml](./docker-compose.example.yml)，用同一个 `drexor-python:latest` 镜像启动 `api` 和 `worker` 两个容器。
 
 ### API 文档
 
 - Swagger UI: http://localhost:8000/docs
+- Scalar API Reference: http://localhost:8000/scalar
 - ReDoc: http://localhost:8000/redoc
 - 接口文档: [docs/api/README.md](./docs/api/README.md)
 - 产品文档: [docs/README.md](./docs/README.md)
@@ -52,7 +74,8 @@ make dev
 
 ```
 app/
-├── main.py                # 应用入口
+├── main.py                # API 应用入口
+├── worker.py              # 后台 worker 入口（scheduler / queue）
 ├── config/                # 配置管理 (pydantic-settings)
 ├── core/                  # 核心模块 (异常、日志、安全、响应)
 │   └── security/          # 密码、JWT、Cookie、TOTP、钱包验证、API Key

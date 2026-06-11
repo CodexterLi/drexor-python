@@ -60,6 +60,18 @@ class Settings(BaseSettings):
     # ============ 跨域配置 ============
     CORS_ORIGINS: list[str] = ["*"]
 
+    # ============ Worker配置 ============
+    WORKER_INSTANCE_ID: str | None = None
+    WORKER_SHUTDOWN_TIMEOUT_SECONDS: int = 30
+
+    # ============ Scheduler配置 ============
+    SCHEDULER_ENABLED: bool = False
+    SCHEDULER_LOAD_ONLY_ENABLED_JOBS: bool = True
+
+    # ============ Queue Worker配置 ============
+    QUEUE_WORKER_ENABLED: bool = False
+    QUEUE_WORKER_CONSUMERS: list[str] = []
+
     # Pydantic v2 中使用 model_config 替代 Config 类
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=True)
 

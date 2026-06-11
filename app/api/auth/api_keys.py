@@ -4,7 +4,7 @@ API Key 管理端点
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 
 from app.api.auth.dependencies import get_auth_service, get_current_active_user
 from app.models.user import User
@@ -18,7 +18,7 @@ from app.services.auth import AuthService
 router = APIRouter()
 
 
-@router.post("/api-keys", status_code=status.HTTP_201_CREATED)
+@router.post("/api-keys", response_model=CreateApiKeyResponse, status_code=status.HTTP_201_CREATED)
 async def create_api_key(
     req: CreateApiKeyRequest,
     current_user: User = Depends(get_current_active_user),
@@ -41,7 +41,7 @@ async def create_api_key(
     ).model_dump()
 
 
-@router.get("/api-keys")
+@router.get("/api-keys", response_model=list[ApiKeyResponse])
 async def list_api_keys(
     current_user: User = Depends(get_current_active_user),
     auth_service: AuthService = Depends(get_auth_service),
@@ -53,7 +53,7 @@ async def list_api_keys(
 
 @router.put("/api-keys/{api_key_id}/revoke", status_code=status.HTTP_204_NO_CONTENT)
 async def revoke_api_key(
-    api_key_id: int,
+    api_key_id: int = Path(..., description="API Key ID"),
     current_user: User = Depends(get_current_active_user),
     auth_service: AuthService = Depends(get_auth_service),
 ) -> None:
@@ -65,7 +65,7 @@ async def revoke_api_key(
 
 @router.delete("/api-keys/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_api_key(
-    api_key_id: int,
+    api_key_id: int = Path(..., description="API Key ID"),
     current_user: User = Depends(get_current_active_user),
     auth_service: AuthService = Depends(get_auth_service),
 ) -> None:
