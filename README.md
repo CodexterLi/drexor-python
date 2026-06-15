@@ -33,7 +33,7 @@ cp .env.example .env
 # 编辑 .env，填入数据库 / Redis / 密钥等
 
 # 初始化数据库
-psql -U postgres -d drexor -f migrations/001_init.sql
+make init-sql
 
 # 运行服务
 make dev

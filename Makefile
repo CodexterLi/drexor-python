@@ -1,7 +1,7 @@
 -include .env
 export
 
-.PHONY: install dev worker docker-build docker-run-api docker-run-worker test lint format upgrade
+.PHONY: install dev worker docker-build docker-run-api docker-run-worker init-sql test lint format upgrade
 
 install:
 	uv sync
@@ -14,6 +14,9 @@ worker:
 
 docker-build:
 	docker build -t drexor-python:latest .
+
+init-sql:
+	uv run python scripts/init_db.py
 
 test:
 	uv run pytest -v
